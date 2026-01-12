@@ -12,6 +12,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 #initializing the database with the flask app
 db.init_app(app)
 
+@app.route('/')
+def home():
+    return '<h1> Welcome to my late show app</h1>'
+
 
 
 
