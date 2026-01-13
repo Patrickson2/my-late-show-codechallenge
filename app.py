@@ -11,14 +11,16 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 #initializing the database with the flask app
 db.init_app(app)
+migrate = Migrate(app, db)
 
 @app.route('/')
 def home():
     return '<h1> Welcome to my late show app</h1>'
 
-
-
-
+@app.route('/episodes', methods=['GET'])
+def get_episodes():
+    episodes = Episode.query.all()
+    return jsonify([episode.to_dict(only=('id', 'date', 'number')) for episode in episodes])
 
 
 if __name__ == '__main__':
