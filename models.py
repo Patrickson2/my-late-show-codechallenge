@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 
 
+
 class Episode(db.Model):
     __tablename__ = 'episodes'
 
