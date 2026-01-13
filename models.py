@@ -1,26 +1,50 @@
 from flask_sqlalchemy import SQLAlchemy
-fro
-
+from sqlalchemy.orm import validates
+from sqlalchemy_serializer import SerializerMixin
 
 db = SQLAlchemy()
 
-class Episode(db.Model):
+class Episode(db.Model, SerializerMixin):
     __tablename__ = 'episodes'
-
+    
+    serialize_rules = ('-appearances.episode',)
+    
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.String(10))
+    date = db.Column(db.String)
     number = db.Column(db.Integer)
+    
+    # Relationship with Appearance (one-to-many)
+    appearances = db.relationship('Appearance', back_populates='episode', cascade='all, delete-orphan')
 
-class Guest(db.Model):
+class Guest(db.Model, SerializerMixin):
     __tablename__ = 'guests'
-
+    
+    serialize_rules = ('-appearances.guest',)
+    
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    occupation = db.Column(db.String(100))
+    name = db.Column(db.String)
+    occupation = db.Column(db.String)
+    
+    # Relationship with Appearance (one-to-many)
+    appearances = db.relationship('Appearance', back_populates='guest', cascade='all, delete-orphan')
 
-class Appearance(db.Model):
+class Appearance(db.Model, SerializerMixin):
     __tablename__ = 'appearances'
-
+    
+    serialize_rules = ('-episode.appearances', '-guest.appearances')
+    
     id = db.Column(db.Integer, primary_key=True)
     rating = db.Column(db.Integer)
-         
+    episode_id = db.Column(db.Integer, db.ForeignKey('episodes.id'))
+    guest_id = db.Column(db.Integer, db.ForeignKey('guests.id'))
+    
+    # Relationships
+    episode = db.relationship('Episode', back_populates='appearances')
+    guest = db.relationship('Guest', back_populates='appearances')
+    
+    # Validation for rating (must be between 1 and 5)
+    @validates('rating')
+    def validate_rating(self, key, rating):
+        if rating is None or rating < 1 or rating > 5:
+            raise ValueError("Rating must be between 1 and 5")
+        return rating
