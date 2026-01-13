@@ -45,6 +45,12 @@ class Appearance(db.Model, SerializerMixin):
     # Validation for rating (must be between 1 and 5)
     @validates('rating')
     def validate_rating(self, key, rating):
-        if rating is None or rating < 1 or rating > 5:
+        if rating is None:
+            raise ValueError("Rating must be between 1 and 5")
+        try:
+            rating = int(rating)
+        except (ValueError, TypeError):
+            raise ValueError("Rating must be between 1 and 5")
+        if rating < 1 or rating > 5:
             raise ValueError("Rating must be between 1 and 5")
         return rating
